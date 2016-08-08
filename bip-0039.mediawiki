@@ -73,9 +73,7 @@ b) similar words avoided
      prone and more difficult to guess
 
 c) sorted wordlists
-   - the wordlist is sorted which allows for more efficient lookup of the code words
-     (i.e. implementations can use binary search instead of linear search)
-   - this also allows trie (a prefix tree) to be used, e.g. for better compression
+   - the wordlist is sorted, which allows for more efficient lookup of the code words IN SOME CASES.  See below under "Implementation Details"
 
 The wordlist can contain native characters, but they must be encoded in UTF-8
 using Normalization Form Compatibility Decomposition (NFKD).
@@ -123,10 +121,16 @@ Also see https://github.com/bip32JP/bip32JP.github.io/blob/master/test_JP_BIP39.
 
 (Japanese wordlist test with heavily normalized symbols as passphrase)
 
+==Implementation Details==
+
+An implementation is considered 'correct' if the mapping from words to 11-bit integers matches EXACTLY the mapping found in the reference wordlist between the word and the 0-index of the line it appears on.  Care needs to be implemented here in implmentation: Although the wordlists are "sorted" according to some locale, they are not sorted universally according to all locales.  In many cases the locale setting used in string comparison can result in the list not being sorted under the current locale, which makes the lookup incorrect.  Therefore implementers, of this BIP are encouraged to use a hash table, linear search, a trie, or another data structure for wordlist lookup.  If binary search is the most efficient or preferrable algorithmic choice for some reason, implmentations of this BIP must ensure that BOTH a locale-independent string comparison function is used, AND that this function preserves the order defined in the wordlist file. 
+
+  A minimum perfect hash algorithm is likely to be the most efficient lookup, and an implementation in C of a mph for each wordlist is provided for implementers in the wordlist directory.
+
 ==Reference Implementation==
 
 Reference implementation including wordlists is available from
-
+#Broken, uses binary search and python uses locale for string comparison
 http://github.com/trezor/python-mnemonic
 
 ==Other Implementations==
@@ -135,7 +139,7 @@ Objective-C:
 * https://github.com/nybex/NYMnemonic
 
 Haskell:
-* https://github.com/haskoin/haskoin
+* https://github.com/haskoin/haskoin 
 
 .NET C# (PCL):
 * https://github.com/Thashiznets/BIP39.NET
@@ -144,5 +148,5 @@ Haskell:
 * https://github.com/NicolasDorier/NBitcoin
 
 JavaScript:
-* https://github.com/bitpay/bitcore-mnemonic
+* https://github.com/bitpay/bitcore-mnemonic (Uses linear search)
 * https://github.com/bitcoinjs/bip39 (used by [[https://github.com/blockchain/My-Wallet-V3/blob/v3.8.0/src/hd-wallet.js#L121-L146|blockchain.info]])
